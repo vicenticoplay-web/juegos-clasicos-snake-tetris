@@ -224,7 +224,7 @@
         }
 
         /* ============================================================
-           📱 CONTROLES TÁCTILES (SOLO MÓVIL)
+           📱 CONTROLES TÁCTILES (SOLO MÓVIL) - AGIGANTADOS
            ============================================================ */
         .mobile-controls {
             display: none;
@@ -233,33 +233,33 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(8px);
             border-top: 2px solid rgba(255, 255, 255, 0.08);
-            padding: 10px 12px;
+            padding: 14px 16px;
             touch-action: none;
             user-select: none;
             justify-content: space-between;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
         .mobile-controls .grupo {
             display: flex;
-            gap: 8px;
+            gap: 12px;
             align-items: center;
             flex-wrap: wrap;
         }
 
         .mobile-controls .ctrl-btn {
-            width: 56px;
-            height: 56px;
-            border-radius: 14px;
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
             background: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.15);
+            border: 2.5px solid rgba(255, 255, 255, 0.18);
             color: white;
-            font-size: 22px;
+            font-size: 28px;
             font-weight: 700;
             display: flex;
             align-items: center;
@@ -267,139 +267,103 @@
             cursor: pointer;
             transition: 0.08s;
             touch-action: manipulation;
-            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            min-width: 48px;
+            min-width: 60px;
         }
 
         .mobile-controls .ctrl-btn:active {
             transform: scale(0.88);
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
             border-color: #00aaff;
-            box-shadow: 0 0 20px rgba(0, 170, 255, 0.2);
+            box-shadow: 0 0 30px rgba(0, 170, 255, 0.25);
         }
 
         .mobile-controls .ctrl-btn.accion {
-            background: rgba(30, 144, 255, 0.15);
-            border-color: rgba(30, 144, 255, 0.3);
+            background: rgba(30, 144, 255, 0.2);
+            border-color: rgba(30, 144, 255, 0.35);
         }
 
         .mobile-controls .ctrl-btn.accion:active {
-            background: rgba(30, 144, 255, 0.35);
+            background: rgba(30, 144, 255, 0.4);
             border-color: #1e90ff;
         }
 
         .mobile-controls .ctrl-btn.direccion {
-            background: rgba(0, 150, 255, 0.1);
-            border-color: rgba(0, 150, 255, 0.2);
-            font-size: 26px;
+            background: rgba(0, 150, 255, 0.12);
+            border-color: rgba(0, 150, 255, 0.25);
+            font-size: 32px;
         }
 
         .mobile-controls .ctrl-btn.direccion:active {
-            background: rgba(0, 150, 255, 0.3);
+            background: rgba(0, 150, 255, 0.35);
             border-color: #00aaff;
         }
 
         .mobile-controls .ctrl-btn.secundario {
-            background: rgba(255, 200, 0, 0.08);
-            border-color: rgba(255, 200, 0, 0.2);
+            background: rgba(255, 200, 0, 0.1);
+            border-color: rgba(255, 200, 0, 0.25);
         }
 
         .mobile-controls .ctrl-btn.secundario:active {
-            background: rgba(255, 200, 0, 0.25);
+            background: rgba(255, 200, 0, 0.3);
             border-color: #ffd93d;
         }
 
         /* Mostrar controles solo en móvil */
         @media (pointer: coarse) {
             #app-container {
-                padding-bottom: 180px;
+                padding-bottom: 200px;
             }
             .mobile-controls {
                 display: flex !important;
             }
         }
 
+        /* Ajustes para móviles pequeños */
         @media (max-width: 500px) {
             .mobile-controls .ctrl-btn {
-                width: 46px;
-                height: 46px;
+                width: 58px;
+                height: 58px;
+                font-size: 22px;
+                min-width: 50px;
+                border-radius: 14px;
+            }
+            .mobile-controls .ctrl-btn.direccion {
+                font-size: 26px;
+            }
+            .mobile-controls {
+                padding: 10px 12px;
+                gap: 6px;
+            }
+            .mobile-controls .grupo {
+                gap: 6px;
+            }
+            #app-container {
+                padding-bottom: 170px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .mobile-controls .ctrl-btn {
+                width: 50px;
+                height: 50px;
                 font-size: 18px;
-                min-width: 40px;
+                min-width: 42px;
                 border-radius: 12px;
             }
             .mobile-controls .ctrl-btn.direccion {
-                font-size: 20px;
+                font-size: 22px;
             }
             .mobile-controls {
-                padding: 8px 10px;
+                padding: 8px 8px;
                 gap: 4px;
             }
             .mobile-controls .grupo {
                 gap: 4px;
             }
             #app-container {
-                padding-bottom: 160px;
-                padding-left: 10px;
-                padding-right: 10px;
-            }
-            canvas {
-                max-width: 300px;
-            }
-            #info-panel {
-                padding: 12px 14px;
-                font-size: 13px;
-                max-width: 220px;
-            }
-            #info-panel h3 {
-                font-size: 15px;
-            }
-            #info-panel p {
-                font-size: 13px;
-            }
-            #menu-juegos button {
-                padding: 6px 14px;
-                font-size: 14px;
-            }
-            h1 {
-                font-size: 20px;
-            }
-        }
-
-        @media (max-width: 400px) {
-            canvas {
-                max-width: 250px;
-            }
-            #info-panel {
-                max-width: 180px;
-                padding: 10px 10px;
-            }
-            .mobile-controls .ctrl-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 15px;
-                min-width: 34px;
-                border-radius: 10px;
-            }
-            .mobile-controls .ctrl-btn.direccion {
-                font-size: 17px;
-            }
-            #app-container {
                 padding-bottom: 150px;
-            }
-        }
-
-        @media (max-width: 360px) {
-            #game-area {
-                flex-direction: column;
-                align-items: center;
-            }
-            #info-panel {
-                max-width: 250px;
-                width: 100%;
-            }
-            canvas {
-                max-width: 280px;
             }
         }
     </style>
@@ -965,7 +929,6 @@
             btnSnake.classList.toggle('activo', juego === 'snake');
             btnTetris.classList.toggle('activo', juego === 'tetris');
 
-            // Mostrar/ocultar controles táctiles según juego
             if (juego === 'snake') {
                 controlesSnake.style.display = 'flex';
                 controlesTetris.style.display = 'none';
