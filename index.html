@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Clásicos · Snake & Tetris</title>
+    <style>
+        /* ==========================================
+           ESTILOS GENERALES
+           ========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Courier New', monospace;
+        }
+
+        body {
+            background: #0b0e14;
+            background-image: radial-gradient(circle at 20% 30%, #141c2a, #07090e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 16px;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        #app-container {
+            background: #111820;
+            padding: 20px 20px 16px;
+            border-radius: 28px;
+            box-shadow: 0 0 60px rgba(0, 180, 255, 0.08), 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 150, 255, 0.02);
+            border: 1px solid #1f3040;
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            padding-bottom: 200px; /* Espacio para controles móviles */
+        }
+
+        h1 {
+            color: #c8d6e5;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            text-shadow: 0 0 20px rgba(30, 144, 255, 0.15);
+        }
+
+        h1 span {
+            color: #ffd93d;
+        }
+
+        /* ---- Menú de juegos ---- */
+        #menu-juegos {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        #menu-juegos button {
+            background: rgba(20, 30, 44, 0.8);
+            backdrop-filter: blur(4px);
+            border: 2px solid #2c4050;
+            border-radius: 14px;
+            color: #d0e0f0;
+            padding: 8px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.15s ease;
+            box-shadow: 0 4px 0 #0b1117;
+            text-shadow: 0 0 12px rgba(0, 150, 255, 0.1);
+            letter-spacing: 0.5px;
+            touch-action: manipulation;
+        }
+
+        #menu-juegos button:hover {
+            background: rgba(30, 50, 70, 0.9);
+            border-color: #3a6a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #0b1117;
+        }
+
+        #menu-juegos button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 #0b1117;
+        }
+
+        #menu-juegos button.activo {
+            border-color: #1e90ff;
+            background: rgba(30, 144, 255, 0.15);
+            box-shadow: 0 0 25px rgba(30, 144, 255, 0.2);
+        }
+
+        /* ---- Contenedor del juego ---- */
+        #game-area {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        /* ---- Canvas ---- */
+        canvas {
+            background: #1a2330;
+            border-radius: 16px;
+            border: 2px solid #1f3040;
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 120, 255, 0.04);
+            width: 100%;
+            max-width: 380px;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            touch-action: none;
+        }
+
+        /* ---- Panel de información ---- */
+        #info-panel {
+            background: rgba(12, 18, 28, 0.6);
+            border-radius: 16px;
+            border: 1px solid #1f3040;
+            padding: 16px 20px;
+            min-width: 130px;
+            color: #c8d6e5;
+            text-align: left;
+            backdrop-filter: blur(4px);
+            flex: 1;
+            min-width: 120px;
+            max-width: 280px;
+        }
+
+        #info-panel h3 {
+            color: #ffd93d;
+            font-size: 17px;
+            margin-bottom: 10px;
+            text-align: center;
+            border-bottom: 1px solid #2a3e52;
+            padding-bottom: 6px;
+        }
+
+        #info-panel p {
+            font-size: 15px;
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #info-panel .valor {
+            color: #44ff88;
+            font-weight: 700;
+        }
+
+        #info-panel .puntuacion-maxima {
+            color: #ffd700;
+        }
+
+        #info-panel .controles {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #667788;
+            border-top: 1px solid #1a2634;
+            padding-top: 10px;
+        }
+
+        #info-panel .controles kbd {
+            background: #141c28;
+            color: #8ab4d6;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid #2a4050;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        #info-extra {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #8ab4d6;
+        }
+
+        #info-extra .siguiente-pieza {
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        #info-extra .siguiente-pieza .fila {
+            display: flex;
+            gap: 2px;
+        }
+
+        /* ---- Botón de reinicio ---- */
+        #btn-reiniciar {
+            background: #1e90ff;
+            border: none;
+            border-radius: 30px;
+            color: white;
+            padding: 8px 18px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 12px;
+            width: 100%;
+            transition: 0.2s;
+            box-shadow: 0 0 20px rgba(30, 144, 255, 0.15);
+            touch-action: manipulation;
+        }
+
+        #btn-reiniciar:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(30, 144, 255, 0.3);
+        }
+
+        #btn-reiniciar:active {
+            transform: scale(0.95);
+        }
+
+        /* ============================================================
+           📱 CONTROLES TÁCTILES (SOLO MÓVIL)
+           ============================================================ */
+        .mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            border-top: 2px solid rgba(255, 255, 255, 0.08);
+            padding: 10px 12px;
+            touch-action: none;
+            user-select: none;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .mobile-controls .grupo {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .mobile-controls .ctrl-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.08s;
+            touch-action: manipulation;
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            min-width: 48px;
+        }
+
+        .mobile-controls .ctrl-btn:active {
+            transform: scale(0.88);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #00aaff;
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.2);
+        }
+
+        .mobile-controls .ctrl-btn.accion {
+            background: rgba(30, 144, 255, 0.15);
+            border-color: rgba(30, 144, 255, 0.3);
+        }
+
+        .mobile-controls .ctrl-btn.accion:active {
+            background: rgba(30, 144, 255, 0.35);
+            border-color: #1e90ff;
+        }
+
+        .mobile-controls .ctrl-btn.direccion {
+            background: rgba(0, 150, 255, 0.1);
+            border-color: rgba(0, 150, 255, 0.2);
+            font-size: 26px;
+        }
+
+        .mobile-controls .ctrl-btn.direccion:active {
+            background: rgba(0, 150, 255, 0.3);
+            border-color: #00aaff;
+        }
+
+        .mobile-controls .ctrl-btn.secundario {
+            background: rgba(255, 200, 0, 0.08);
+            border-color: rgba(255, 200, 0, 0.2);
+        }
+
+        .mobile-controls .ctrl-btn.secundario:active {
+            background: rgba(255, 200, 0, 0.25);
+            border-color: #ffd93d;
+        }
+
+        /* Mostrar controles solo en móvil */
+        @media (pointer: coarse) {
+            #app-container {
+                padding-bottom: 180px;
+            }
+            .mobile-controls {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .mobile-controls .ctrl-btn {
+                width: 46px;
+                height: 46px;
+                font-size: 18px;
+                min-width: 40px;
+                border-radius: 12px;
+            }
+            .mobile-controls .ctrl-btn.direccion {
+                font-size: 20px;
+            }
+            .mobile-controls {
+                padding: 8px 10px;
+                gap: 4px;
+            }
+            .mobile-controls .grupo {
+                gap: 4px;
+            }
+            #app-container {
+                padding-bottom: 160px;
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            canvas {
+                max-width: 300px;
+            }
+            #info-panel {
+                padding: 12px 14px;
+                font-size: 13px;
+                max-width: 220px;
+            }
+            #info-panel h3 {
+                font-size: 15px;
+            }
+            #info-panel p {
+                font-size: 13px;
+            }
+            #menu-juegos button {
+                padding: 6px 14px;
+                font-size: 14px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            canvas {
+                max-width: 250px;
+            }
+            #info-panel {
+                max-width: 180px;
+                padding: 10px 10px;
+            }
+            .mobile-controls .ctrl-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 15px;
+                min-width: 34px;
+                border-radius: 10px;
+            }
+            .mobile-controls .ctrl-btn.direccion {
+                font-size: 17px;
+            }
+            #app-container {
+                padding-bottom: 150px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            #game-area {
+                flex-direction: column;
+                align-items: center;
+            }
+            #info-panel {
+                max-width: 250px;
+                width: 100%;
+            }
+            canvas {
+                max-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <h1>🎮 <span>CLÁSICOS</span> · Snake & Tetris</h1>
+
+        <div id="menu-juegos">
+            <button id="btn-snake" class="activo">🐍 Snake</button>
+            <button id="btn-tetris">🧱 Tetris</button>
+        </div>
+
+        <div id="game-area">
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            <div id="info-panel">
+                <h3 id="titulo-juego">🐍 SNAKE</h3>
+                <p>Puntuación <span class="valor" id="puntuacion">0</span></p>
+                <p>🏆 Récord <span class="valor puntuacion-maxima" id="record">0</span></p>
+                <div id="info-extra"></div>
+                <div class="controles" id="controles-info">
+                    <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> mover
+                </div>
+                <button id="btn-reiniciar">🔄 Reiniciar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTROLES TÁCTILES (solo móvil) -->
+    <div id="mobile-controls" class="mobile-controls">
+        <!-- Snake: direcciones + acción -->
+        <div class="grupo" id="controles-snake">
+            <button class="ctrl-btn direccion" data-dir="arriba">⬆</button>
+            <button class="ctrl-btn direccion" data-dir="abajo">⬇</button>
+            <button class="ctrl-btn direccion" data-dir="izquierda">⬅</button>
+            <button class="ctrl-btn direccion" data-dir="derecha">➡</button>
+        </div>
+
+        <!-- Tetris: direcciones + acciones -->
+        <div class="grupo" id="controles-tetris" style="display:none;">
+            <button class="ctrl-btn direccion" data-tetris="izquierda">⬅</button>
+            <button class="ctrl-btn direccion" data-tetris="derecha">➡</button>
+            <button class="ctrl-btn direccion" data-tetris="abajo">⬇</button>
+            <button class="ctrl-btn secundario" data-tetris="rotar">🔄</button>
+            <button class="ctrl-btn accion" data-tetris="soltar">⬇⬇</button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 🎮  CLÁSICOS · SNAKE + TETRIS (con controles táctiles)
+        // ============================================================
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const W = 400,
+            H = 400;
+
+        // ---- Elementos UI ----
+        const tituloJuego = document.getElementById('titulo-juego');
+        const puntuacionSpan = document.getElementById('puntuacion');
+        const recordSpan = document.getElementById('record');
+        const infoExtra = document.getElementById('info-extra');
+        const controlesInfo = document.getElementById('controles-info');
+        const btnReiniciar = document.getElementById('btn-reiniciar');
+        const btnSnake = document.getElementById('btn-snake');
+        const btnTetris = document.getElementById('btn-tetris');
+
+        // ---- Controles móviles ----
+        const controlesSnake = document.getElementById('controles-snake');
+        const controlesTetris = document.getElementById('controles-tetris');
+
+        // ---- Estado ----
+        let juegoActual = 'snake';
+        let animacionId = null;
+        let juegoActivo = true;
+
+        // ---- Récords (localStorage) ----
+        let recordSnake = parseInt(localStorage.getItem('recordSnake')) || 0;
+        let recordTetris = parseInt(localStorage.getItem('recordTetris')) || 0;
+
+        // ============================================================
+        // 🐍  SNAKE
+        // ============================================================
+        const snake = {
+            celdas: [],
+            direccion: 'derecha',
+            siguienteDireccion: 'derecha',
+            comida: null,
+            puntuacion: 0,
+            gameOver: false,
+            velocidad: 150,
+            ultimoMovimiento: 0,
+            size: 20,
+            cols: 20,
+            filas: 20,
+            creciendo: false,
+        };
+
+        function iniciarSnake() {
+            const s = snake;
+            s.celdas = [
+                { x: 5, y: 10 },
+                { x: 4, y: 10 },
+                { x: 3, y: 10 }
+            ];
+            s.direccion = 'derecha';
+            s.siguienteDireccion = 'derecha';
+            s.puntuacion = 0;
+            s.gameOver = false;
+            s.creciendo = false;
+            s.ultimoMovimiento = 0;
+            generarComidaSnake();
+            actualizarUI();
+        }
+
+        function generarComidaSnake() {
+            const s = snake;
+            const maxIntentos = 1000;
+            let intentos = 0;
+            let nuevaComida = null;
+            while (!nuevaComida && intentos < maxIntentos) {
+                const x = Math.floor(Math.random() * s.cols);
+                const y = Math.floor(Math.random() * s.filas);
+                if (!s.celdas.some(c => c.x === x && c.y === y)) {
+                    nuevaComida = { x, y };
+                }
+                intentos++;
+            }
+            s.comida = nuevaComida;
+            if (!s.comida) s.gameOver = true;
+        }
+
+        function moverSnake() {
+            const s = snake;
+            if (s.gameOver || !s.comida) return;
+
+            s.direccion = s.siguienteDireccion;
+
+            const cabeza = s.celdas[0];
+            let nuevaCabeza = { ...cabeza };
+            switch (s.direccion) {
+                case 'arriba':
+                    nuevaCabeza.y--;
+                    break;
+                case 'abajo':
+                    nuevaCabeza.y++;
+                    break;
+                case 'izquierda':
+                    nuevaCabeza.x--;
+                    break;
+                case 'derecha':
+                    nuevaCabeza.x++;
+                    break;
+            }
+
+            if (nuevaCabeza.x < 0 || nuevaCabeza.x >= s.cols || nuevaCabeza.y < 0 || nuevaCabeza.y >= s.filas) {
+                s.gameOver = true;
+                actualizarUI();
+                return;
+            }
+
+            if (s.celdas.some(c => c.x === nuevaCabeza.x && c.y === nuevaCabeza.y)) {
+                s.gameOver = true;
+                actualizarUI();
+                return;
+            }
+
+            s.celdas.unshift(nuevaCabeza);
+
+            if (s.comida && nuevaCabeza.x === s.comida.x && nuevaCabeza.y === s.comida.y) {
+                s.puntuacion++;
+                s.creciendo = true;
+                generarComidaSnake();
+                if (!s.comida) {
+                    s.gameOver = true;
+                    actualizarUI();
+                    return;
+                }
+            } else {
+                s.creciendo = false;
+            }
+
+            if (!s.creciendo) s.celdas.pop();
+
+            if (s.puntuacion > recordSnake) {
+                recordSnake = s.puntuacion;
+                localStorage.setItem('recordSnake', recordSnake);
+            }
+            actualizarUI();
+        }
+
+        function dibujarSnake() {
+            const s = snake;
+            ctx.clearRect(0, 0, W, H);
+            ctx.fillStyle = '#1a2330';
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= s.cols; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * s.size, 0);
+                ctx.lineTo(i * s.size, H);
+                ctx.stroke();
+            }
+            for (let i = 0; i <= s.filas; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * s.size);
+                ctx.lineTo(W, i * s.size);
+                ctx.stroke();
+            }
+
+            if (s.comida) {
+                ctx.shadowColor = '#ff6b6b';
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = '#ff6b6b';
+                ctx.beginPath();
+                ctx.arc(s.comida.x * s.size + s.size / 2, s.comida.y * s.size + s.size / 2, s.size / 2 - 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#ffd93d';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🍎', s.comida.x * s.size + s.size / 2, s.comida.y * s.size + s.size / 2);
+            }
+
+            s.celdas.forEach((celda, index) => {
+                const x = celda.x * s.size;
+                const y = celda.y * s.size;
+                const esCabeza = index === 0;
+                const grad = ctx.createRadialGradient(x + 4, y + 4, 2, x + s.size / 2, y + s.size / 2, s.size / 2);
+                if (esCabeza) {
+                    grad.addColorStop(0, '#88ddff');
+                    grad.addColorStop(1, '#4a9eff');
+                } else {
+                    const intensidad = 0.7 + 0.3 * (1 - index / s.celdas.length);
+                    grad.addColorStop(0, `rgba(0, 255, 200, ${intensidad})`);
+                    grad.addColorStop(1, `rgba(0, 180, 180, ${intensidad * 0.8})`);
+                }
+                ctx.shadowColor = esCabeza ? '#88ddff' : 'rgba(0,255,200,0.2)';
+                ctx.shadowBlur = esCabeza ? 20 : 8;
+                ctx.fillStyle = grad;
+                ctx.fillRect(x + 1, y + 1, s.size - 2, s.size - 2);
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 0.5;
+                ctx.strokeRect(x + 1, y + 1, s.size - 2, s.size - 2);
+            });
+
+            if (s.gameOver) {
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#ff6b6b';
+                ctx.font = 'bold 40px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('💀 GAME OVER', W / 2, H / 2 - 10);
+                ctx.fillStyle = '#c8d6e5';
+                ctx.font = '18px monospace';
+                ctx.fillText('Presiona "Reiniciar"', W / 2, H / 2 + 50);
+            }
+        }
+
+        // ============================================================
+        // 🧱  TETRIS
+        // ============================================================
+        const tetris = {
+            cols: 10,
+            filas: 20,
+            size: 20,
+            tablero: [],
+            piezaActual: null,
+            piezaSiguiente: null,
+            puntuacion: 0,
+            lineasEliminadas: 0,
+            gameOver: false,
+            velocidad: 500,
+            ultimoDescenso: 0,
+            piezas: [
+                { forma: [
+                        [0, 0, 0, 0],
+                        [1, 1, 1, 1],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0]
+                    ], color: '#00f0f0' },
+                { forma: [
+                        [1, 1],
+                        [1, 1]
+                    ], color: '#f0f000' },
+                { forma: [
+                        [0, 1, 0],
+                        [1, 1, 1],
+                        [0, 0, 0]
+                    ], color: '#a000f0' },
+                { forma: [
+                        [0, 1, 1],
+                        [1, 1, 0],
+                        [0, 0, 0]
+                    ], color: '#00f000' },
+                { forma: [
+                        [1, 1, 0],
+                        [0, 1, 1],
+                        [0, 0, 0]
+                    ], color: '#f00000' },
+                { forma: [
+                        [1, 0, 0],
+                        [1, 1, 1],
+                        [0, 0, 0]
+                    ], color: '#f0a000' },
+                { forma: [
+                        [0, 0, 1],
+                        [1, 1, 1],
+                        [0, 0, 0]
+                    ], color: '#0000f0' }
+            ]
+        };
+
+        function iniciarTetris() {
+            const t = tetris;
+            t.tablero = [];
+            for (let y = 0; y < t.filas; y++) {
+                t.tablero[y] = new Array(t.cols).fill(0);
+            }
+            t.puntuacion = 0;
+            t.lineasEliminadas = 0;
+            t.gameOver = false;
+            t.ultimoDescenso = 0;
+            t.piezaSiguiente = crearPiezaTetris();
+            generarPiezaTetris();
+            actualizarUI();
+        }
+
+        function crearPiezaTetris() {
+            const t = tetris;
+            const idx = Math.floor(Math.random() * t.piezas.length);
+            const pieza = t.piezas[idx];
+            return {
+                forma: pieza.forma.map(fila => [...fila]),
+                color: pieza.color,
+                x: Math.floor((t.cols - pieza.forma[0].length) / 2),
+                y: 0,
+                tipo: idx
+            };
+        }
+
+        function generarPiezaTetris() {
+            const t = tetris;
+            t.piezaActual = t.piezaSiguiente || crearPiezaTetris();
+            t.piezaSiguiente = crearPiezaTetris();
+            if (colisionTetris(t.piezaActual.forma, t.piezaActual.x, t.piezaActual.y)) {
+                t.gameOver = true;
+            }
+            actualizarSiguientePieza();
+        }
+
+        function colisionTetris(forma, offX, offY) {
+            const t = tetris;
+            for (let y = 0; y < forma.length; y++) {
+                for (let x = 0; x < forma[y].length; x++) {
+                    if (forma[y][x] !== 0) {
+                        const boardX = offX + x;
+                        const boardY = offY + y;
+                        if (boardX < 0 || boardX >= t.cols || boardY >= t.filas || boardY < 0) return true;
+                        if (boardY >= 0 && t.tablero[boardY][boardX] !== 0) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function fijarPiezaTetris() {
+            const t = tetris;
+            const p = t.piezaActual;
+            for (let y = 0; y < p.forma.length; y++) {
+                for (let x = 0; x < p.forma[y].length; x++) {
+                    if (p.forma[y][x] !== 0) {
+                        const boardX = p.x + x;
+                        const boardY = p.y + y;
+                        if (boardY >= 0) t.tablero[boardY][boardX] = p.color;
+                    }
+                }
+            }
+            eliminarLineasTetris();
+            generarPiezaTetris();
+            actualizarUI();
+        }
+
+        function eliminarLineasTetris() {
+            const t = tetris;
+            let lineasEliminadas = 0;
+            for (let y = t.filas - 1; y >= 0; ) {
+                if (t.tablero[y].every(celda => celda !== 0)) {
+                    t.tablero.splice(y, 1);
+                    t.tablero.unshift(new Array(t.cols).fill(0));
+                    lineasEliminadas++;
+                } else {
+                    y--;
+                }
+            }
+            if (lineasEliminadas > 0) {
+                const puntos = [0, 100, 300, 500, 800];
+                const add = puntos[Math.min(lineasEliminadas, 4)];
+                t.puntuacion += add;
+                t.lineasEliminadas += lineasEliminadas;
+                if (t.puntuacion > recordTetris) {
+                    recordTetris = t.puntuacion;
+                    localStorage.setItem('recordTetris', recordTetris);
+                }
+                actualizarUI();
+            }
+        }
+
+        function moverTetris(dx, dy) {
+            const t = tetris;
+            if (t.gameOver || !t.piezaActual) return;
+            if (!colisionTetris(t.piezaActual.forma, t.piezaActual.x + dx, t.piezaActual.y + dy)) {
+                t.piezaActual.x += dx;
+                t.piezaActual.y += dy;
+            } else if (dy === 1) {
+                fijarPiezaTetris();
+            }
+        }
+
+        function rotarTetris() {
+            const t = tetris;
+            if (t.gameOver || !t.piezaActual) return;
+            const p = t.piezaActual;
+            const forma = p.forma;
+            const n = forma.length;
+            const rotada = [];
+            for (let y = 0; y < n; y++) {
+                rotada[y] = [];
+                for (let x = 0; x < n; x++) {
+                    rotada[y][x] = forma[n - 1 - x][y];
+                }
+            }
+            if (!colisionTetris(rotada, p.x, p.y)) {
+                p.forma = rotada;
+            } else {
+                if (!colisionTetris(rotada, p.x - 1, p.y)) {
+                    p.forma = rotada;
+                    p.x--;
+                } else if (!colisionTetris(rotada, p.x + 1, p.y)) {
+                    p.forma = rotada;
+                    p.x++;
+                }
+            }
+        }
+
+        function soltarTetris() {
+            const t = tetris;
+            if (t.gameOver || !t.piezaActual) return;
+            while (!colisionTetris(t.piezaActual.forma, t.piezaActual.x, t.piezaActual.y + 1)) {
+                t.piezaActual.y++;
+            }
+            fijarPiezaTetris();
+        }
+
+        function actualizarSiguientePieza() {
+            const t = tetris;
+            if (!t.piezaSiguiente) {
+                infoExtra.innerHTML = '';
+                return;
+            }
+            const p = t.piezaSiguiente;
+            infoExtra.innerHTML = `
+                <p style="font-size:13px; color:#8ab4d6; margin-top:8px;">⬇️ Siguiente:</p>
+                <div class="siguiente-pieza">
+                    ${p.forma.map(fila => 
+                        `<div class="fila">
+                            ${fila.map(celda => 
+                                `<div style="width:16px; height:16px; background: ${celda ? p.color : 'transparent'}; border:1px solid ${celda ? p.color : 'rgba(255,255,255,0.05)'}; border-radius:2px;"></div>`
+                            ).join('')}
+                        </div>`
+                    ).join('')}
+                </div>
+            `;
+        }
+
+        function dibujarTetris() {
+            const t = tetris;
+            ctx.clearRect(0, 0, W, H);
+            ctx.fillStyle = '#1a2330';
+            ctx.fillRect(0, 0, W, H);
+
+            const offsetX = (W - t.cols * t.size) / 2;
+            const offsetY = (H - t.filas * t.size) / 2;
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= t.cols; i++) {
+                ctx.beginPath();
+                ctx.moveTo(offsetX + i * t.size, offsetY);
+                ctx.lineTo(offsetX + i * t.size, offsetY + t.filas * t.size);
+                ctx.stroke();
+            }
+            for (let i = 0; i <= t.filas; i++) {
+                ctx.beginPath();
+                ctx.moveTo(offsetX, offsetY + i * t.size);
+                ctx.lineTo(offsetX + t.cols * t.size, offsetY + i * t.size);
+                ctx.stroke();
+            }
+
+            for (let y = 0; y < t.filas; y++) {
+                for (let x = 0; x < t.cols; x++) {
+                    if (t.tablero[y][x] !== 0) {
+                        ctx.shadowColor = t.tablero[y][x];
+                        ctx.shadowBlur = 8;
+                        ctx.fillStyle = t.tablero[y][x];
+                        ctx.fillRect(offsetX + x * t.size + 1, offsetY + y * t.size + 1, t.size - 2, t.size - 2);
+                        ctx.shadowBlur = 0;
+                    }
+                }
+            }
+
+            if (t.piezaActual && !t.gameOver) {
+                const p = t.piezaActual;
+                for (let y = 0; y < p.forma.length; y++) {
+                    for (let x = 0; x < p.forma[y].length; x++) {
+                        if (p.forma[y][x] !== 0) {
+                            const boardX = (p.x + x) * t.size + offsetX;
+                            const boardY = (p.y + y) * t.size + offsetY;
+                            ctx.shadowColor = p.color;
+                            ctx.shadowBlur = 15;
+                            ctx.fillStyle = p.color;
+                            ctx.fillRect(boardX + 1, boardY + 1, t.size - 2, t.size - 2);
+                            ctx.shadowBlur = 0;
+                            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                            ctx.lineWidth = 0.5;
+                            ctx.strokeRect(boardX + 1, boardY + 1, t.size - 2, t.size - 2);
+                        }
+                    }
+                }
+            }
+
+            if (t.gameOver) {
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#ff6b6b';
+                ctx.font = 'bold 40px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('💀 GAME OVER', W / 2, H / 2 - 10);
+                ctx.fillStyle = '#c8d6e5';
+                ctx.font = '18px monospace';
+                ctx.fillText('Presiona "Reiniciar"', W / 2, H / 2 + 50);
+            }
+        }
+
+        // ============================================================
+        // 🎮  CONTROLADOR DE JUEGOS
+        // ============================================================
+
+        function cambiarJuego(juego) {
+            juegoActual = juego;
+            if (animacionId) {
+                cancelAnimationFrame(animacionId);
+                animacionId = null;
+            }
+
+            btnSnake.classList.toggle('activo', juego === 'snake');
+            btnTetris.classList.toggle('activo', juego === 'tetris');
+
+            // Mostrar/ocultar controles táctiles según juego
+            if (juego === 'snake') {
+                controlesSnake.style.display = 'flex';
+                controlesTetris.style.display = 'none';
+                tituloJuego.textContent = '🐍 SNAKE';
+                controlesInfo.innerHTML = '<kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> mover';
+                iniciarSnake();
+                infoExtra.innerHTML = '';
+            } else {
+                controlesSnake.style.display = 'none';
+                controlesTetris.style.display = 'flex';
+                tituloJuego.textContent = '🧱 TETRIS';
+                controlesInfo.innerHTML =
+                    '<kbd>←</kbd> <kbd>→</kbd> mover · <kbd>↑</kbd> rotar · <kbd>↓</kbd> bajar · <kbd>Espacio</kbd> soltar';
+                iniciarTetris();
+            }
+
+            juegoActivo = true;
+            loopJuego();
+        }
+
+        function loopJuego() {
+            if (!juegoActivo) return;
+
+            const ahora = Date.now();
+
+            if (juegoActual === 'snake') {
+                const s = snake;
+                if (!s.gameOver && s.comida) {
+                    if (ahora - s.ultimoMovimiento > s.velocidad) {
+                        moverSnake();
+                        s.ultimoMovimiento = ahora;
+                    }
+                }
+                dibujarSnake();
+            } else {
+                const t = tetris;
+                if (!t.gameOver && t.piezaActual) {
+                    if (ahora - t.ultimoDescenso > t.velocidad) {
+                        if (!colisionTetris(t.piezaActual.forma, t.piezaActual.x, t.piezaActual.y + 1)) {
+                            t.piezaActual.y++;
+                        } else {
+                            fijarPiezaTetris();
+                        }
+                        t.ultimoDescenso = ahora;
+                    }
+                }
+                dibujarTetris();
+            }
+
+            animacionId = requestAnimationFrame(loopJuego);
+        }
+
+        function actualizarUI() {
+            if (juegoActual === 'snake') {
+                puntuacionSpan.textContent = snake.puntuacion;
+                recordSpan.textContent = recordSnake;
+            } else {
+                puntuacionSpan.textContent = tetris.puntuacion;
+                recordSpan.textContent = recordTetris;
+                actualizarSiguientePieza();
+            }
+        }
+
+        function reiniciarJuego() {
+            if (juegoActual === 'snake') {
+                iniciarSnake();
+                if (!animacionId) {
+                    juegoActivo = true;
+                    loopJuego();
+                }
+            } else {
+                iniciarTetris();
+                if (!animacionId) {
+                    juegoActivo = true;
+                    loopJuego();
+                }
+            }
+        }
+
+        // ============================================================
+        // 🎮  CONTROLES DE TECLADO
+        // ============================================================
+
+        document.addEventListener('keydown', (e) => {
+            const key = e.key;
+
+            if (juegoActual === 'snake') {
+                const s = snake;
+                if (s.gameOver) return;
+                switch (key) {
+                    case 'ArrowUp':
+                        if (s.direccion !== 'abajo') s.siguienteDireccion = 'arriba';
+                        e.preventDefault();
+                        break;
+                    case 'ArrowDown':
+                        if (s.direccion !== 'arriba') s.siguienteDireccion = 'abajo';
+                        e.preventDefault();
+                        break;
+                    case 'ArrowLeft':
+                        if (s.direccion !== 'derecha') s.siguienteDireccion = 'izquierda';
+                        e.preventDefault();
+                        break;
+                    case 'ArrowRight':
+                        if (s.direccion !== 'izquierda') s.siguienteDireccion = 'derecha';
+                        e.preventDefault();
+                        break;
+                }
+            } else {
+                const t = tetris;
+                if (t.gameOver) return;
+                switch (key) {
+                    case 'ArrowLeft':
+                        moverTetris(-1, 0);
+                        e.preventDefault();
+                        break;
+                    case 'ArrowRight':
+                        moverTetris(1, 0);
+                        e.preventDefault();
+                        break;
+                    case 'ArrowDown':
+                        moverTetris(0, 1);
+                        e.preventDefault();
+                        break;
+                    case 'ArrowUp':
+                        rotarTetris();
+                        e.preventDefault();
+                        break;
+                    case ' ':
+                        soltarTetris();
+                        e.preventDefault();
+                        break;
+                }
+            }
+        });
+
+        // ============================================================
+        // 📱  CONTROLES TÁCTILES (MÓVIL)
+        // ============================================================
+
+        // ---- Snake ----
+        document.querySelectorAll('#controles-snake .ctrl-btn').forEach(btn => {
+            const dir = btn.dataset.dir;
+
+            const start = (e) => {
+                e.preventDefault();
+                const s = snake;
+                if (s.gameOver) return;
+                switch (dir) {
+                    case 'arriba':
+                        if (s.direccion !== 'abajo') s.siguienteDireccion = 'arriba';
+                        break;
+                    case 'abajo':
+                        if (s.direccion !== 'arriba') s.siguienteDireccion = 'abajo';
+                        break;
+                    case 'izquierda':
+                        if (s.direccion !== 'derecha') s.siguienteDireccion = 'izquierda';
+                        break;
+                    case 'derecha':
+                        if (s.direccion !== 'izquierda') s.siguienteDireccion = 'derecha';
+                        break;
+                }
+            };
+
+            btn.addEventListener('touchstart', start, { passive: false });
+            btn.addEventListener('mousedown', start);
+        });
+
+        // ---- Tetris ----
+        document.querySelectorAll('#controles-tetris .ctrl-btn').forEach(btn => {
+            const accion = btn.dataset.tetris;
+
+            const start = (e) => {
+                e.preventDefault();
+                const t = tetris;
+                if (t.gameOver) return;
+                switch (accion) {
+                    case 'izquierda':
+                        moverTetris(-1, 0);
+                        break;
+                    case 'derecha':
+                        moverTetris(1, 0);
+                        break;
+                    case 'abajo':
+                        moverTetris(0, 1);
+                        break;
+                    case 'rotar':
+                        rotarTetris();
+                        break;
+                    case 'soltar':
+                        soltarTetris();
+                        break;
+                }
+            };
+
+            btn.addEventListener('touchstart', start, { passive: false });
+            btn.addEventListener('mousedown', start);
+        });
+
+        // ---- Botón reiniciar (también táctil) ----
+        btnReiniciar.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            reiniciarJuego();
+        });
+
+        // ============================================================
+        // 🚀  INICIO
+        // ============================================================
+
+        btnSnake.addEventListener('click', () => cambiarJuego('snake'));
+        btnTetris.addEventListener('click', () => cambiarJuego('tetris'));
+        btnReiniciar.addEventListener('click', reiniciarJuego);
+
+        // Iniciar con Snake
+        cambiarJuego('snake');
+    </script>
+</body>
+</html>
